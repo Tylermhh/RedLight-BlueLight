@@ -1,0 +1,6 @@
+# Ignore virtual environments
+venv/
+pygame-env/
+env/
+*.pyc
+__pycache__/
