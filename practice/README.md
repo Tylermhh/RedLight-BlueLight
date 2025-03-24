@@ -37,7 +37,7 @@ Explore different environments like Atari games, robotics simulations, or contin
 
 Experiment with different RL algorithms and hyperparameters.
 
-📌 Suggestions:
+📌 Resources:
 
 [Basic Usage OpenAI Gym](https://www.gymlibrary.dev/content/basic_usage/)
 [OpenAI Gym](https://www.gymlibrary.dev/#)
