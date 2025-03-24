@@ -2,6 +2,7 @@
 
 This repository contains practice exercises to reinforce key concepts in computer vision and reinforcement learning. The goal is to build hands-on experience with OpenCV for motion detection and OpenAI Gym for reinforcement learning.
 
+
 Steps
 1. Motion Detection with Masking (OpenCV)
 Learn how to apply masking and use it for motion detection using OpenCV.
@@ -13,6 +14,7 @@ Experiment with different masking strategies to isolate movement in a video feed
 📌 Resources:
 
 [OpenCV Documentation](https://docs.opencv.org/)
+
 
 
 2. Tutorial Reinforcement Learning with OpenAI Gym (Optional)
@@ -29,6 +31,8 @@ Implement and play with the code to understand how reinforcement learning works 
 📌 Resources:
 
 [OpenAI Gym](https://www.gymlibrary.dev)
+
+
     
 3. Try a New OpenAI Gym Environment
 Pick an environment from OpenAI Gym (other than the Cart-Pole classic control example) and implement an RL agent for it.
