@@ -18,8 +18,8 @@ Experiment with different masking strategies to isolate movement in a video feed
 2. Tutorial Reinforcement Learning with OpenAI Gym (Optional)
 Follow this YouTube tutorial to implement a reinforcement learning project using OpenAI Gym:
 📺 [Tutorial Link](https://www.youtube.com/watch?v=cO5g5qLrLSo)
-- **The tutorial above is deprecated and probably will not work on all devices and versions of packages.** I added my attempt at following the tutorial as well as comments with explanations on initial steps to try to work around dependency issues in the [Github repo](https://github.com/Tylermhh/RedLight-BlueLight).
-    - I have also attached a version that does work in the [GitHub repo](https://github.com/Tylermhh/RedLight-BlueLight) saved as “RL Practice.py” that uses entirely different packages.
+- **The tutorial above is deprecated and probably will not work on all devices and versions of packages.** I added my attempt at following the tutorial as well as comments with explanations on initial steps to try to work around dependency issues.
+    - I have also attached a version that does work saved as “RL Practice.py” that uses entirely different packages.
     - Follow the video tutorial first and learn about RL before looking at the RL Practice.py file
 
 Learn about Q-learning, Deep Q-Networks (DQN), and training agents in simulated environments.
