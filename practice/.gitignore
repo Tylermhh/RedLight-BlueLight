@@ -1,6 +1,7 @@
 # Ignore virtual environments
 venv/
 pygame-env/
+rl-env/
 env/
 *.pyc
 __pycache__/
