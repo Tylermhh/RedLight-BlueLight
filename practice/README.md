@@ -1,4 +1,5 @@
 **Practice Exercises Over Break**
+
 This repository contains practice exercises to reinforce key concepts in computer vision and reinforcement learning. The goal is to build hands-on experience with OpenCV for motion detection and OpenAI Gym for reinforcement learning.
 
 Steps
