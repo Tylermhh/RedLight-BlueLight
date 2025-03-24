@@ -40,4 +40,5 @@ Experiment with different RL algorithms and hyperparameters.
 📌 Resources:
 
 [Basic Usage OpenAI Gym](https://www.gymlibrary.dev/content/basic_usage/)
+
 [OpenAI Gym](https://www.gymlibrary.dev/#)
