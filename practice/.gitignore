@@ -2,6 +2,7 @@
 venv/
 pygame-env/
 rl-env/
+custom_rl_env/
 env/
 *.pyc
 __pycache__/
