@@ -12,6 +12,7 @@ class Game:
         self.time_for_next_state = datetime.now()
 
     def run(self):
+        # TODO: capture and show camera feed
         # game loop skeleton
         while self.state != GameState.END_GAME:
             match self.state:
