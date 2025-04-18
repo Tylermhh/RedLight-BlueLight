@@ -26,7 +26,7 @@ class Game:
         self.end_game()
 
     def read_faces(self):
-        # initialize contents of self.face_filters_playing with each player
+        # TODO: initialize contents of self.face_filters_playing with each player
         pass
 
         # start red light / green light loop
@@ -50,7 +50,7 @@ class Game:
             # if there are still players left playing, go to green light state
             self.to_green_light_state()
         else:
-            # check for movement each frame
+            # TODO: check for movement each frame
             pass
 
         # if no players left playing, end game
@@ -58,7 +58,7 @@ class Game:
             self.state = GameState.END_GAME
 
     def end_game(self):
-        # report results
+        # TODO: report results
         pass
 
     def to_green_light_state(self):
@@ -70,8 +70,8 @@ class Game:
         self.state = GameState.RED_LIGHT
 
     def set_time_for_next_state_green(self):
-        green_light_time_seconds = random() * (
-                GREEN_LIGHT_TIME_RANGE_SECONDS + GREEN_LIGHT_TIME_MIN_SECONDS)
+        green_light_time_seconds = random() * GREEN_LIGHT_TIME_RANGE_SECONDS + (
+                 GREEN_LIGHT_TIME_MIN_SECONDS)
         self.time_for_next_state = (
                 datetime.now() + timedelta(seconds=green_light_time_seconds)
         )
