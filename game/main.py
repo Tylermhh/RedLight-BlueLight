@@ -1,4 +1,6 @@
 from constants import *
+from player import *
+from face_reader import *
 from random import random
 from datetime import datetime, timedelta
 
@@ -6,9 +8,9 @@ from datetime import datetime, timedelta
 class Game:
     def __init__(self):
         self.state: GameState = GameState.READ_FACES
-        self.face_filters_playing: list = [] # list of what?
-        self.face_filters_won: list = [] # list of what?
-        self.face_filters_lost: list = [] # list of what?
+        self.players_playing: list[Player] = []
+        self.players_won: list[Player] = []
+        self.players_lost: list[Player] = []
         self.time_for_next_state = datetime.now()
 
     def run(self):
@@ -27,8 +29,7 @@ class Game:
         self.end_game()
 
     def read_faces(self):
-        # TODO: initialize contents of self.face_filters_playing with each player
-        pass
+        self.players_playing = get_player_filters()
 
         # start red light / green light loop
         self.to_green_light_state()
@@ -36,18 +37,18 @@ class Game:
     def green_light(self):
         # stay green for a random amount of time
         # time is predetermined when green light state is first entered
-        if self.time_for_next_state < datetime.now() and self.face_filters_playing:
+        if self.time_for_next_state < datetime.now() and self.players_playing:
             # if there are still players left playing, go to red light state
             self.to_red_light_state()
 
         # if no players left playing, end game
-        if not self.face_filters_playing:
+        if not self.players_playing:
             self.state = GameState.END_GAME
 
     def red_light(self):
         # stay red for defined amount of time (RED_LIGHT_TIME_SECONDS)
         # check for movement during this time
-        if self.time_for_next_state < datetime.now() and self.face_filters_playing:
+        if self.time_for_next_state < datetime.now() and self.players_playing:
             # if there are still players left playing, go to green light state
             self.to_green_light_state()
         else:
@@ -55,7 +56,7 @@ class Game:
             pass
 
         # if no players left playing, end game
-        if not self.face_filters_playing:
+        if not self.players_playing:
             self.state = GameState.END_GAME
 
     def end_game(self):
