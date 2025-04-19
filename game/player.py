@@ -8,3 +8,9 @@ class Player:
         # TODO: interface with CV script
         # this is a stub
         return False
+
+    def is_won(self) -> bool:
+        # TODO: interface with CV script
+        # this is a stub
+        # how to do this???
+        return False
