@@ -45,6 +45,14 @@ class Game:
             cv2.putText(frame, f"State: {self.state.name}", (10, 30),
                         cv2.FONT_HERSHEY_SIMPLEX, 1, border_color.value, 2)
 
+            # time remaining in *_Light states
+            if self.state in [GameState.RED_LIGHT, GameState.GREEN_LIGHT]:
+                time_remaining_str = str(self.time_for_next_state - datetime.now())
+                cv2.putText(frame,
+                            f"{time_remaining_str[time_remaining_str.index(':') + 1:]}",
+                            (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                            border_color.value, 2)
+
             # display the frame
             cv2.imshow('Live Feed', frame)
 
