@@ -14,13 +14,15 @@ class GameState(Enum):
 
 class Color(Enum):
     WHITE = (255, 255, 255)
-    RED = (0, 0, 255)
-    GREEN = (0, 255, 0)
+    RED = (0, 0, 192)
+    GREEN = (0, 128, 0)
+    GRAY  = (96, 96, 96)
+    BLACK = (0, 0, 0)
 
 
 STATE_COLORS: dict[GameState, Color] = {
     GameState.READ_FACES: Color.WHITE,
     GameState.GREEN_LIGHT: Color.GREEN,
     GameState.RED_LIGHT: Color.RED,
-    GameState.END_GAME: Color.WHITE
+    GameState.END_GAME: Color.GRAY
 }

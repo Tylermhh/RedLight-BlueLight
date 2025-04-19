@@ -40,8 +40,12 @@ class Game:
 
             # draw border and text overlay
             height, width = frame.shape[:2]
+
+            # border
             cv2.rectangle(frame, (0, 0), (width - 1, height - 1), border_color.value,
                           thickness=10)
+
+            # current state
             cv2.putText(frame, f"State: {self.state.name}", (10, 30),
                         cv2.FONT_HERSHEY_SIMPLEX, 1, border_color.value, 2)
 
@@ -52,6 +56,11 @@ class Game:
                             f"{time_remaining_str[time_remaining_str.index(':') + 1:]}",
                             (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 1,
                             border_color.value, 2)
+
+            # players remaining
+            cv2.putText(frame, f"Players: {len(self.players_playing)}",
+                        (10, height - 20), cv2.FONT_HERSHEY_SIMPLEX,
+                        1, border_color.value, 2)
 
             # display the frame
             cv2.imshow('Live Feed', frame)
