@@ -1,6 +1,5 @@
 from constants import *
-from player import *
-from face_reader import *
+from cv_interface import *
 from random import random
 from datetime import datetime, timedelta
 
@@ -8,9 +7,9 @@ from datetime import datetime, timedelta
 class Game:
     def __init__(self):
         self.state: GameState = GameState.READ_FACES
-        self.players_playing: list[Player] = []
-        self.players_won: list[Player] = []
-        self.players_lost: list[Player] = []
+        self.players_playing: dict[int, Player] = {}
+        self.players_won: dict[int, Player] = {}
+        self.players_lost: dict[int, Player] = {}
         self.time_for_next_state = datetime.now()
 
     def run(self):
@@ -52,8 +51,7 @@ class Game:
             # if there are still players left playing, go to green light state
             self.to_green_light_state()
         else:
-            # TODO: check for movement each frame
-            pass
+            check_player_movement(self.players_playing, self.players_lost)
 
         # if no players left playing, end game
         if not self.players_playing:
