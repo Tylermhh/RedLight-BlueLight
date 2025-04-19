@@ -10,21 +10,21 @@ def check_player_movement(players_playing: dict[int, Player], players_lost: dict
     # this is a stub
 
     players_caught_ids: list[int] = []
-    for id in players_playing:
-        if players_playing[id].is_moving():
-            players_caught_ids.append(id)
+    for player_id in players_playing:
+        if players_playing[player_id].is_moving():
+            players_caught_ids.append(player_id)
 
-    for id in players_caught_ids:
-        players_lost[id] = players_playing.pop(id)
+    for player_id in players_caught_ids:
+        players_lost[player_id] = players_playing.pop(player_id)
 
 def check_player_winning(players_playing: dict[int, Player], players_won: dict[int, Player]) -> None:
     # TODO: interface with CV script to check if players have won the game
     # this is a stub
     # how to do this???
     players_won_ids: list[int] = []
-    for id in players_playing:
-        if players_playing[id].is_won():
-            players_won_ids.append(id)
+    for player_id in players_playing:
+        if players_playing[player_id].is_won():
+            players_won_ids.append(player_id)
 
-    for id in players_won_ids:
-        players_won[id] = players_playing.pop(id)
+    for player_id in players_won_ids:
+        players_won[player_id] = players_playing.pop(player_id)

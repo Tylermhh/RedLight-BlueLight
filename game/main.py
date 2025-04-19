@@ -2,6 +2,7 @@ from constants import *
 from cv_interface import *
 from random import random
 from datetime import datetime, timedelta
+import cv2
 
 
 class Game:
@@ -13,9 +14,16 @@ class Game:
         self.time_for_next_state = datetime.now()
 
     def run(self) -> None:
-        # TODO: capture and show camera feed
+        cap = cv2.VideoCapture(0)  # Use 0 for default camera
+
         # game loop skeleton
-        while self.state != GameState.END_GAME:
+        while True:
+            # get frame
+            ret, frame = cap.read()
+            if not ret:
+                break
+
+            # perform action based on game state
             match self.state:
                 case GameState.READ_FACES:
                     self.read_faces()
@@ -23,9 +31,37 @@ class Game:
                     self.green_light()
                 case GameState.RED_LIGHT:
                     self.red_light()
+                case GameState.END_GAME:
+                    # end game
+                    self.end_game()
 
-        # end game
-        self.end_game()
+            # get color for current state
+            border_color = STATE_COLORS[self.state]
+
+            # draw border and text overlay
+            height, width = frame.shape[:2]
+            cv2.rectangle(frame, (0, 0), (width - 1, height - 1), border_color.value,
+                          thickness=10)
+            cv2.putText(frame, f"State: {self.state.name}", (10, 30),
+                        cv2.FONT_HERSHEY_SIMPLEX, 1, border_color.value, 2)
+
+            # display the frame
+            cv2.imshow('Live Feed', frame)
+
+            # exit on 'q' press
+            # TODO: remove later
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+
+            # FOR TESTING
+            # TODO: remove later
+            if cv2.waitKey(1) & 0xFF == ord('e'):
+                print('here')
+                self.state = GameState.END_GAME
+
+        # cleanup
+        cap.release()
+        cv2.destroyAllWindows()
 
     def read_faces(self) -> None:
         self.players_playing = get_player_filters()
