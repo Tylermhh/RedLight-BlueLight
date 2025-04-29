@@ -86,14 +86,44 @@ def get_player_filters() -> dict[int, Player]:
     cv2.destroyAllWindows()
     return players
 
+#check_player_movement:
+# --- During red light, grabs a camera frame
+# --- Detects players in the frame
+# --- Crops their current face regions
+# --- Calls is_moving(current_face) on each player
+# --- If the face changed significantly, they’re eliminated
 
 def check_player_movement(players_playing: dict[int, Player], players_lost: dict[int, Player]) -> None:
-    # TODO: interface with CV script to check player movement
-    # this is a stub
+    # Capture a frame from the webcam
+    cap = cv2.VideoCapture(0)
+    ret, frame = cap.read()
+    cap.release()
+
+    if not ret:
+        print("Could not read from webcam during red light.")
+        return
+
+    input_img = preprocess_frame(frame)
+    outputs = movenet.signatures["serving_default"](tf.constant(input_img))
+    people = outputs["output_0"].numpy()
+    _, boxes = extract_faces_from_keypoints(frame, people)
 
     players_caught_ids: list[int] = []
-    for player_id in players_playing:
-        if players_playing[player_id].is_moving():
+
+    for i, player_id in enumerate(list(players_playing.keys())):
+        if i >= len(boxes):
+            continue  # Not enough faces detected
+
+        x1, y1, x2, y2 = boxes[i]
+        face = frame[y1:y2, x1:x2]
+        if face.size == 0:
+            continue
+
+        face_gray = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
+        face_resized = cv2.resize(face_gray, (100, 100))
+
+        if players_playing[player_id].is_moving(face_resized):
+            print(f"Player {player_id} moved! Eliminating...")
             players_caught_ids.append(player_id)
 
     for player_id in players_caught_ids:
