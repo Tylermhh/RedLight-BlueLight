@@ -1,1 +1,3 @@
 reinforcement_learning/
+.DS_Store
+game/*
