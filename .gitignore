@@ -4,3 +4,4 @@ custom-venv
 logs
 models
 tensorboard
+checkpoints
