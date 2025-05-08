@@ -25,7 +25,7 @@ class Player:
         return score > 25  # lower = more sensitive
 
     def is_won(self) -> bool:
-        # TODO: interface with CV script
+        # TODO: interface with CV scriptx
         # this is a stub
         # how to do this???
         return False
