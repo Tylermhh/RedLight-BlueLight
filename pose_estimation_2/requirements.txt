@@ -1,0 +1,15 @@
+argparse
+dill
+fire
+matplotlib
+numba
+psutil
+pycocotools
+requests
+scikit-image
+scipy
+slidingwindow
+tqdm
+opencv-python
+numpy
+tensorflow
