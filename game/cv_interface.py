@@ -22,7 +22,7 @@ def extract_faces_from_keypoints(frame, people, threshold=0.3):
     for person in people[0]:
         keypoints = np.reshape(person[:51], (17, 3))
 
-        # Fixed issue with detecting extra people since MoveNet is looking for 6 people
+        # Only count person if enough confident keypoints
         high_confidence_points = [kp for kp in keypoints if kp[2] >= threshold]
         if len(high_confidence_points) < 6:
             continue
@@ -44,16 +44,16 @@ def extract_faces_from_keypoints(frame, people, threshold=0.3):
 
     return faces, draw_boxes
 
-def get_player_filters() -> dict[int, Player]:
-    cap = cv2.VideoCapture(0)
+def get_player_filters(cap) -> dict[int, Player]:
     players = {}
     next_id = 1
 
     print("Initializing players... Press 'c' when all players are in frame.")
     while True:
         ret, frame = cap.read()
-        if not ret:
-            break
+        if not ret or frame is None:
+            print("[ERROR] Failed to read frame from webcam.")
+            return {}
 
         cv2.imshow("Press 'c' to capture players", frame)
 
@@ -82,24 +82,13 @@ def get_player_filters() -> dict[int, Player]:
             cv2.waitKey(1000)
             break
 
-    cap.release()
     cv2.destroyAllWindows()
     return players
 
-#check_player_movement:
-# --- During red light, grabs a camera frame
-# --- Detects players in the frame
-# --- Crops their current face regions
-# --- Calls is_moving(current_face) on each player
-# --- If the face changed significantly, they’re eliminated
-
-def check_player_movement(players_playing: dict[int, Player], players_lost: dict[int, Player]) -> None:
-    # Capture a frame from the webcam
-    cap = cv2.VideoCapture(0)
+def check_player_movement(cap, players_playing: dict[int, Player], players_lost: dict[int, Player]) -> None:
     ret, frame = cap.read()
-    cap.release()
 
-    if not ret:
+    if not ret or frame is None:
         print("Could not read from webcam during red light.")
         return
 
@@ -130,9 +119,7 @@ def check_player_movement(players_playing: dict[int, Player], players_lost: dict
         players_lost[player_id] = players_playing.pop(player_id)
 
 def check_player_winning(players_playing: dict[int, Player], players_won: dict[int, Player]) -> None:
-    # TODO: interface with CV script to check if players have won the game
-    # this is a stub
-    # how to do this???
+    # This is a stub
     players_won_ids: list[int] = []
     for player_id in players_playing:
         if players_playing[player_id].is_won():

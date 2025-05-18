@@ -23,7 +23,7 @@ class Player:
         print(f"[Player {self.id}] Difference Score: {score}")
 
        # Cooldown logic: only eliminate if the difference score is high for several frames
-        if score > 25:  # can tweak this threshold
+        if score > 15:  # can tweak this threshold
             self.moving_frame_count += 1
         else:
             self.moving_frame_count = 0  # reset if they stopped moving
