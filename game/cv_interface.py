@@ -29,9 +29,20 @@ def extract_faces_from_keypoints(frame, people, threshold=0.3):
 
         x = int(keypoints[0][1] * w)
         y = int(keypoints[0][0] * h)
+
         face_size = 80
         x1, y1 = max(0, x - face_size // 2), max(0, y - face_size // 2)
         x2, y2 = min(w, x + face_size // 2), min(h, y + face_size // 2)
+
+        # FIXED NUM OF PEOPLE by filtering overlapping boxes
+        duplicate = False
+        for (ex1, ey1, ex2, ey2) in draw_boxes:
+            iou = compute_iou((x1, y1, x2, y2), (ex1, ey1, ex2, ey2))
+            if iou > 0.4:
+                duplicate = True
+                break
+        if duplicate:
+            continue
 
         face = frame[y1:y2, x1:x2]
         if face.size == 0:
@@ -43,6 +54,24 @@ def extract_faces_from_keypoints(frame, people, threshold=0.3):
         draw_boxes.append((x1, y1, x2, y2))
 
     return faces, draw_boxes
+
+<<<<<<< HEAD
+#IoU stands for Intersection over Union - using it to make sure MoveNet doesn't double count the same person
+def compute_iou(boxA, boxB):
+    xA = max(boxA[0], boxB[0])
+    yA = max(boxA[1], boxB[1])
+    xB = min(boxA[2], boxB[2])
+    yB = min(boxA[3], boxB[3])
+
+    interArea = max(0, xB - xA) * max(0, yB - yA)
+    if interArea == 0:
+        return 0.0
+
+    boxAArea = (boxA[2] - boxA[0]) * (boxA[3] - boxA[1])
+    boxBArea = (boxB[2] - boxB[0]) * (boxB[3] - boxB[1])
+    iou = interArea / float(boxAArea + boxBArea - interArea)
+    return iou
+
 
 def get_player_filters(cap) -> dict[int, Player]:
     players = {}
