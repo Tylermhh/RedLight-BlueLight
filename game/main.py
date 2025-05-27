@@ -1,9 +1,11 @@
 from constants import *
-from cv_interface import *
-from random import random
+from player import Player
 from datetime import datetime, timedelta
+from random import random
 import cv2
 
+# Import updated cv_interface functions directly
+from cv_interface import get_player_filters, check_player_movement, check_player_winning
 
 class Game:
     def __init__(self):
@@ -12,18 +14,20 @@ class Game:
         self.players_won: dict[int, Player] = {}
         self.players_lost: dict[int, Player] = {}
         self.time_for_next_state = datetime.now()
+        self.cap = None  # Camera will be initialized in run()
 
     def run(self) -> None:
-        cap = cv2.VideoCapture(0)  # Use 0 for default camera
+        self.cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+        if not self.cap.isOpened():
+            print("❌ Could not open video capture")
+            return
 
-        # game loop skeleton
         while True:
-            # get frame
-            ret, frame = cap.read()
-            if not ret:
+            ret, frame = self.cap.read()
+            if not ret or frame is None:
+                print("❌ Failed to grab frame")
                 break
 
-            # perform action based on game state
             match self.state:
                 case GameState.READ_FACES:
                     self.read_faces()
@@ -32,117 +36,98 @@ class Game:
                 case GameState.RED_LIGHT:
                     self.red_light()
                 case GameState.END_GAME:
-                    # end game
                     self.end_game()
+                    break
 
-            # get color for current state
             border_color = STATE_COLORS[self.state]
-
-            # draw border and text overlay
             height, width = frame.shape[:2]
 
-            # border
-            cv2.rectangle(frame, (0, 0), (width - 1, height - 1), border_color.value,
-                          thickness=10)
+            # draw border and text
+            cv2.rectangle(frame, (0, 0), (width - 1, height - 1), border_color.value, thickness=10)
+            cv2.putText(frame, f"State: {self.state.name}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, border_color.value, 2)
 
-            # current state
-            cv2.putText(frame, f"State: {self.state.name}", (10, 30),
-                        cv2.FONT_HERSHEY_SIMPLEX, 1, border_color.value, 2)
-
-            # time remaining in *_Light states
             if self.state in [GameState.RED_LIGHT, GameState.GREEN_LIGHT]:
                 time_remaining_str = str(self.time_for_next_state - datetime.now())
-                cv2.putText(frame,
-                            f"{time_remaining_str[time_remaining_str.index(':') + 1:]}",
-                            (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 1,
-                            border_color.value, 2)
+                cv2.putText(frame, f"{time_remaining_str[time_remaining_str.index(':') + 1:]}", (10, 60),
+                            cv2.FONT_HERSHEY_SIMPLEX, 1, border_color.value, 2)
 
-            # players remaining
-            cv2.putText(frame, f"Players: {len(self.players_playing)}",
-                        (10, height - 20), cv2.FONT_HERSHEY_SIMPLEX,
-                        1, border_color.value, 2)
+            cv2.putText(frame, f"Players: {len(self.players_playing)}", (10, height - 20),
+                        cv2.FONT_HERSHEY_SIMPLEX, 1, border_color.value, 2)
 
-            # display the frame
             cv2.imshow('Live Feed', frame)
 
-            # exit on 'q' press
-            # TODO: remove later
-            if cv2.waitKey(1) & 0xFF == ord('q'):
+            # Temp key listeners for quitting or ending
+            key = cv2.waitKey(1) & 0xFF
+            if key == ord('q'):
                 break
-
-            # FOR TESTING
-            # TODO: remove later
-            if cv2.waitKey(1) & 0xFF == ord('e'):
-                print('here')
+            elif key == ord('e'):
+                print("🔚 Forcing end game...")
                 self.state = GameState.END_GAME
 
-        # cleanup
-        cap.release()
+        self.cap.release()
         cv2.destroyAllWindows()
 
     def read_faces(self) -> None:
-        self.players_playing = get_player_filters()
-
-        # start red light / green light loop
+        print("🔍 Reading player filters...")
+        self.players_playing = get_player_filters(self.cap)
+        print(f"✅ Loaded {len(self.players_playing)} player(s)")
         self.to_green_light_state()
 
     def green_light(self) -> None:
-        # stay green for a random amount of time
-        # time is predetermined when green light state is first entered
         if self.time_for_next_state < datetime.now() and self.players_playing:
-            # if there are still players left playing, go to red light state
             self.to_red_light_state()
             return
         else:
             check_player_winning(self.players_playing, self.players_won)
 
-        # if no players left playing, end game
         if not self.players_playing:
             self.state = GameState.END_GAME
 
     def red_light(self) -> None:
-        # stay red for defined amount of time (RED_LIGHT_TIME_SECONDS)
-        # check for movement during this time
         if self.time_for_next_state < datetime.now() and self.players_playing:
-            # if there are still players left playing, go to green light state
             self.to_green_light_state()
             return
         else:
-            check_player_movement(self.players_playing, self.players_lost)
+            check_player_movement(self.cap, self.players_playing, self.players_lost)
             check_player_winning(self.players_playing, self.players_won)
 
-        # if no players left playing, end game
         if not self.players_playing:
             self.state = GameState.END_GAME
+            print(f"🎮 Transitioned to state: {self.state}")
 
     def end_game(self):
-        # TODO: report results
-        pass
+        print("🎉 Game over!")
+        print(f"🏁 Winners: {[p.id for p in self.players_won.values()]}")
+        print(f"❌ Eliminated: {[p.id for p in self.players_lost.values()]}")
+        print("Press 'q' to exit...")
+        
+        while True:
+            key = input()
+            if key.lower() == 'q':
+                break
 
     def to_green_light_state(self) -> None:
         self.set_time_for_next_state_green()
         self.state = GameState.GREEN_LIGHT
+        print(f"🎮 Transitioned to state: {self.state}")
 
     def to_red_light_state(self) -> None:
         self.set_time_for_next_state_red()
         self.state = GameState.RED_LIGHT
+        print(f"🎮 Transitioned to state: {self.state}")
 
     def set_time_for_next_state_green(self) -> None:
-        green_light_time_seconds = random() * GREEN_LIGHT_TIME_RANGE_SECONDS + (
-                 GREEN_LIGHT_TIME_MIN_SECONDS)
-        self.time_for_next_state = (
-                datetime.now() + timedelta(seconds=green_light_time_seconds)
-        )
+        duration = random() * GREEN_LIGHT_TIME_RANGE_SECONDS + GREEN_LIGHT_TIME_MIN_SECONDS
+        self.time_for_next_state = datetime.now() + timedelta(seconds=duration)
 
     def set_time_for_next_state_red(self) -> None:
-        self.time_for_next_state = (
-            datetime.now() + timedelta(seconds=RED_LIGHT_TIME_SECONDS)
-        )
+        self.time_for_next_state = datetime.now() + timedelta(seconds=RED_LIGHT_TIME_SECONDS)
 
 
 def main() -> None:
     game = Game()
     game.run()
+
 
 if __name__ == '__main__':
     main()
