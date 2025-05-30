@@ -55,7 +55,6 @@ def extract_faces_from_keypoints(frame, people, threshold=0.3):
 
     return faces, draw_boxes
 
-<<<<<<< HEAD
 #IoU stands for Intersection over Union - using it to make sure MoveNet doesn't double count the same person
 def compute_iou(boxA, boxB):
     xA = max(boxA[0], boxB[0])
