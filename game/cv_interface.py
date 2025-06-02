@@ -3,10 +3,16 @@ import cv2
 import numpy as np
 import tensorflow as tf
 import tensorflow_hub as hub
+from pose_test import PoseTracker, draw_pose
+from ultralytics import YOLO
 
 # Load MoveNet MultiPose model
 movenet = hub.load("https://tfhub.dev/google/movenet/multipose/lightning/1")
 movenet_input_size = 256
+
+#yolo pose
+pose_model = YOLO("yolo11n-pose.pt")
+tracker = PoseTracker(movement_threshold=5, max_distance=250)
 
 def preprocess_frame(frame):
     img = cv2.resize(frame, (movenet_input_size, movenet_input_size))
@@ -102,7 +108,33 @@ def check_player_movement(players_playing: dict[int, Player], players_lost: dict
     if not ret:
         print("Could not read from webcam during red light.")
         return
+    
+    results = pose_model(frame, stream=False, verbose=False)
+    keypoints_list = []
+    if results and results[0].keypoints is not None:
+        for kpts_data in results[0].keypoints.data:
+            keypoints_list.append(kpts_data.cpu().numpy() if hasattr(kpts_data, 'cpu') else kpts_data)
 
+    # Update the tracker with all detected poses
+    tracker.update_poses(keypoints_list)
+
+    # Ask the tracker which pose IDs moved
+    moved_pose_ids = tracker.check_movement()
+    if moved_pose_ids:
+        print(f"Detected movement in pose IDs: {moved_pose_ids}")
+
+
+    to_eliminate = []
+    for player_id in players_playing:
+        pose_id = player_id - 1  # <-- adjust if your mapping differs
+        if pose_id in moved_pose_ids:
+            to_eliminate.append(player_id)
+
+    for pid in to_eliminate:
+        print("Player {} moved".format(pid))
+        players_lost[pid] = players_playing.pop(pid)
+        
+    '''
     input_img = preprocess_frame(frame)
     outputs = movenet.signatures["serving_default"](tf.constant(input_img))
     people = outputs["output_0"].numpy()
@@ -127,7 +159,7 @@ def check_player_movement(players_playing: dict[int, Player], players_lost: dict
             players_caught_ids.append(player_id)
 
     for player_id in players_caught_ids:
-        players_lost[player_id] = players_playing.pop(player_id)
+        players_lost[player_id] = players_playing.pop(player_id)'''
 
 def check_player_winning(players_playing: dict[int, Player], players_won: dict[int, Player]) -> None:
     # TODO: interface with CV script to check if players have won the game
