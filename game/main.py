@@ -2,11 +2,9 @@ from constants import *
 from cv_interface import *
 from random import random
 from datetime import datetime, timedelta
-import cv2
-
-# Add these imports at the top:
 from pose_test import PoseTracker, draw_pose
 from ultralytics import YOLO
+import cv2
 
 
 class Game:
@@ -40,7 +38,6 @@ class Game:
                 time.sleep(0.5)
                 self.cap = cv2.VideoCapture(0)
                 if not self.cap.isOpened():
-
                     break
                 else:
                     continue
