@@ -5,7 +5,9 @@ import tensorflow as tf
 import tensorflow_hub as hub
 
 # Load MoveNet MultiPose model
-movenet = hub.load("https://tfhub.dev/google/movenet/multipose/lightning/1")
+# movenet = hub.load("https://tfhub.dev/google/movenet/multipose/lightning/1")
+movenet = hub.load("models")  # adjust path as needed
+
 movenet_input_size = 256
 
 def preprocess_frame(frame):
