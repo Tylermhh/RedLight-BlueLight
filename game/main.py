@@ -24,14 +24,16 @@ class Game:
         self.tracker = PoseTracker(movement_threshold=5, max_distance=250)
 
     def run(self) -> None:
-        #scan faces 
-        self.read_faces() 
+        
 
         
         self.cap = cv2.VideoCapture(0, cv2.CAP_DSHOW) #cv2.CAP_DSHOW might be a bug  
         if not self.cap.isOpened():
             print("error with camera")
             return
+        
+        #scan faces 
+        self.read_faces() 
 
         while True:
             #moved no camera logic inside while True 
