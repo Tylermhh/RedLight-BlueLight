@@ -4,8 +4,11 @@ from datetime import datetime, timedelta
 from random import random
 import cv2
 
-# Import updated cv_interface functions directly
-from cv_interface import get_player_filters, check_player_movement, check_player_winning
+# import move detection files / debugging 
+from pose_test import PoseTracker, draw_pose
+from ultralytics import YOLO
+from cv_interface import *
+import time
 
 class Game:
     def __init__(self):
@@ -14,31 +17,71 @@ class Game:
         self.players_won: dict[int, Player] = {}
         self.players_lost: dict[int, Player] = {}
         self.time_for_next_state = datetime.now()
-        self.cap = None  # Camera will be initialized in run()
+        self.cap = None  # for error with webcam
+
+        # adding yolo pose 
+        self.pose_model = YOLO("yolo11n-pose.pt")
+        self.tracker = PoseTracker(movement_threshold=5, max_distance=250)
 
     def run(self) -> None:
-        self.cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+        
+
+        
+        self.cap = cv2.VideoCapture(0, cv2.CAP_DSHOW) #cv2.CAP_DSHOW might be a bug  
         if not self.cap.isOpened():
-            print("❌ Could not open video capture")
+            print("error with camera")
             return
+        
+        #scan faces 
+        self.read_faces() 
 
         while True:
-            ret, frame = self.cap.read()
-            if not ret or frame is None:
-                print("❌ Failed to grab frame")
-                break
+            #moved no camera logic inside while True 
+            ret, frame = self.cap.read() 
+            if not ret:
+                self.cap.release()
+                time.sleep(0.5)
+                self.cap = cv2.VideoCapture(0)
+                if not self.cap.isOpened():
+                    break
+                else:
+                    continue
+
+            results = self.pose_model(frame, stream=False, verbose=False)
+            keypoints_list = []
+            if results and results[0].keypoints is not None:
+                for kpts_data in results[0].keypoints.data:
+                    keypoints_list.append(kpts_data.cpu().numpy() if hasattr(kpts_data, 'cpu') else kpts_data)
+
+            self.tracker.update_poses(keypoints_list)
+
+            # Detect moved poses and eliminate corresponding Player IDs
+            moved_pose_ids = self.tracker.check_movement()
+            if moved_pose_ids:
+                to_eliminate = []
+                for player_id in self.players_playing:
+                    pose_id = player_id - 1
+                    if pose_id in moved_pose_ids:
+                        to_eliminate.append(player_id)
+                for pid in to_eliminate:
+                    print(f"Player {pid} moved! Eliminating…")
+                    self.players_lost[pid] = self.players_playing.pop(pid)
+
+            # draw poses in addition to detecting
+            active = self.tracker.get_active_poses()
+            for pid, pose_data in active.items():
+                frame = draw_pose(frame, pose_data['keypoints'], pid)
 
             match self.state:
-                case GameState.READ_FACES:
-                    self.read_faces()
                 case GameState.GREEN_LIGHT:
                     self.green_light()
                 case GameState.RED_LIGHT:
                     self.red_light()
                 case GameState.END_GAME:
                     self.end_game()
-                    break
+                    #removed break so that it doesn't close immediately 
 
+            
             border_color = STATE_COLORS[self.state]
             height, width = frame.shape[:2]
 
@@ -107,12 +150,13 @@ class Game:
                 break
 
     def to_green_light_state(self) -> None:
-        self.set_time_for_next_state_green()
+        green_light_time_seconds = random() * GREEN_LIGHT_TIME_RANGE_SECONDS + GREEN_LIGHT_TIME_MIN_SECONDS
+        self.time_for_next_state = datetime.now() + timedelta(seconds=green_light_time_seconds)
         self.state = GameState.GREEN_LIGHT
         print(f"🎮 Transitioned to state: {self.state}")
 
     def to_red_light_state(self) -> None:
-        self.set_time_for_next_state_red()
+        self.time_for_next_state = datetime.now() + timedelta(seconds=RED_LIGHT_TIME_SECONDS)
         self.state = GameState.RED_LIGHT
         print(f"🎮 Transitioned to state: {self.state}")
 
