@@ -1,11 +1,14 @@
 from constants import *
-from cv_interface import *
-from random import random
+from player import Player
 from datetime import datetime, timedelta
-from pose_test import PoseTracker, draw_pose
-from ultralytics import YOLO
+from random import random
 import cv2
 
+# import move detection files / debugging 
+from pose_test import PoseTracker, draw_pose
+from ultralytics import YOLO
+from cv_interface import *
+import time
 
 class Game:
     def __init__(self):
@@ -16,23 +19,23 @@ class Game:
         self.time_for_next_state = datetime.now()
         self.cap = None  # for error with webcam
 
-        # yolo pose instead
+        # adding yolo pose 
         self.pose_model = YOLO("yolo11n-pose.pt")
         self.tracker = PoseTracker(movement_threshold=5, max_distance=250)
 
     def run(self) -> None:
-        self.read_faces()
+        #scan faces 
+        self.read_faces() 
 
-        import time
-        time.sleep(0.5)
-
-        self.cap = cv2.VideoCapture(0)
+        
+        self.cap = cv2.VideoCapture(0, cv2.CAP_DSHOW) #cv2.CAP_DSHOW might be a bug  
         if not self.cap.isOpened():
-            print("error with camear")
+            print("error with camera")
             return
 
         while True:
-            ret, frame = self.cap.read()
+            #moved no camera logic inside while True 
+            ret, frame = self.cap.read() 
             if not ret:
                 self.cap.release()
                 time.sleep(0.5)
@@ -62,7 +65,7 @@ class Game:
                     print(f"Player {pid} moved! Eliminating…")
                     self.players_lost[pid] = self.players_playing.pop(pid)
 
-            # adding pose 
+            # draw poses in addition to detecting
             active = self.tracker.get_active_poses()
             for pid, pose_data in active.items():
                 frame = draw_pose(frame, pose_data['keypoints'], pid)
@@ -74,10 +77,14 @@ class Game:
                     self.red_light()
                 case GameState.END_GAME:
                     self.end_game()
+                    #removed break so that it doesn't close immediately 
 
+            
             border_color = STATE_COLORS[self.state]
-            h, w = frame.shape[:2]
-            cv2.rectangle(frame, (0, 0), (w - 1, h - 1), border_color.value, thickness=10)
+            height, width = frame.shape[:2]
+
+            #draw border and text
+            cv2.rectangle(frame, (0, 0), (width - 1, height - 1), border_color.value, thickness=10)
             cv2.putText(
                 frame,
                 f"State: {self.state.name}",
@@ -92,7 +99,7 @@ class Game:
             cv2.putText(
                 frame,
                 f"Players: {len(self.players_playing)}",
-                (10, h - 20),
+                (10, height - 20),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 1,
                 border_color.value,
@@ -100,7 +107,7 @@ class Game:
             )
 
             cv2.imshow('Live Feed', frame)
-            if cv2.waitKey(1) & 0xFF == ord('q'):
+            if cv2.waitKey(1) & 0xFF == ord('q'): #weird debugging with 0xff
                 break
 
         self.cap.release()
